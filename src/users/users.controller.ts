@@ -8,12 +8,15 @@ import {
   Patch,
   Post,
   Session,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
 import { UserDto } from './dtos/user.dto';
 import { Serialize } from 'src/intercepters/serialize.intercepter';
 import { AuthService } from './auth.service';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { AuthGuard } from 'src/guards/auth.guard';
 
 @Controller('auth')
 @Serialize(UserDto)
@@ -48,12 +51,18 @@ export class UsersController {
     return user;
   }
 
+  // @Get('/currentuser')
+  // whoAmI(@Session() session: { userId?: number }) {
+  //   if (!session?.userId) {
+  //     throw new NotFoundException('User ID not found in session');
+  //   }
+  //   return this.usersService.findOne(session.userId);
+  // }
+
   @Get('/currentuser')
-  whoAmI(@Session() session: { userId?: number }) {
-    if (!session?.userId) {
-      throw new NotFoundException('User ID not found in session');
-    }
-    return this.usersService.findOne(session.userId);
+  @UseGuards(AuthGuard)
+  whoAmI(@CurrentUser() user: UserDto) {
+    return user;
   }
 
   @Get('/signout')
